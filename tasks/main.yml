@@ -1,0 +1,112 @@
+---
+- name: Include OS-specific variables
+  include_vars: "{{ item }}"
+  with_first_found:
+    - "{{ ansible_distribution | lower }}.yml"
+    - "{{ ansible_os_family | lower }}.yml"
+
+- name: Add the virtualbox repository
+  yum_repository:
+    name: virtualbox
+    description: "{{ virtualbox_repo_description }}"
+    baseurl: "{{ virtualbox_repo_url }}"
+    gpgcheck: yes
+    gpgkey: https://www.virtualbox.org/download/oracle_vbox.asc
+    enabled: no
+  become: yes
+
+- name: Install virtualbox dependencies
+  package:
+    name: "{{ item }}"
+    state: latest
+  with_items:
+    - kernel-devel
+      # Ensure that the kernel headers of the currently running kernel are
+      # installed. These may differ from the currently installed kernel version.
+    - "kernel-devel-{{ ansible_kernel }}"
+    - dkms
+    - gcc
+  become: yes
+
+- name: Create vboxusers group
+  group:
+    name: vboxusers
+    state: present
+  become: yes
+
+- name: Check for virtualbox updates
+  command: "{{ ansible_pkg_mgr }} check-update {{ virtualbox_package_name }}
+    --enablerepo virtualbox"
+  args:
+    warn: no
+  register: virtualbox_update
+  become: yes
+  changed_when: false
+  failed_when: virtualbox_update.rc != 0 and virtualbox_update.rc != 100
+
+- when: virtualbox_update.rc == 100 and virtualbox_force_update
+  block:
+    - name: Find users that are running VMs
+      command: ps --noheader -o user -C VBoxSVC
+      register: virtualbox_users
+      become: yes
+      changed_when: false
+      # Wenn ps keinen Prozess findet, hat ps nicht nur eine leere Ausgabe,
+      # sondern auch einen Exit Code von 1. Leider ist der Exit Code 1 in ps
+      # nicht für diesen Fall reserviert, sondern wird auch bei echten Fehlern
+      # ausgegeben. Da echte Fehler aber auch eine Fehlermeldung produzieren
+      # sollten, teste ich hier darauf, dass der Exit Code entweder 0 ist (wenn
+      # Prozesse gefunden wurden, die Virtualbox Instanzen koordinieren), oder
+      # der Exit Code 1 ist und gleichzeitig keine Ausgabe auf stderr statt
+      # gefunden hat (wenn keine solchen Prozesse gefunden wurden, weil sie
+      # nicht existieren, nicht weil ps gescheitert ist).
+      failed_when: not ( virtualbox_users.rc == 0 or ( virtualbox_users.rc == 1
+        and virtualbox_users.stderr == "" ) )
+
+    - name: Find all running VMs
+      command: VBoxManage list runningvms
+      register: virtualbox_running_vms
+      become: yes
+      become_user: "{{ item }}"
+      changed_when: false
+      loop: "{{ virtualbox_users.stdout_lines | default([]) | unique }}"
+      when: virtualbox_users.stdout_lines is defined
+
+    - name: Freeze all running VMs
+      include_tasks: freezevms.yml
+      loop: "{{ virtualbox_running_vms.results }}"
+      loop_control:
+        loop_var: virtualbox_user
+
+    - name: Find all running instances of the virtualbox GUI
+      command: pgrep VirtualBox
+      register: virtualbox_instances
+      failed_when: virtualbox_instances.rc not in [0, 1]
+      changed_when: false
+
+    - name: Stop all instances of the virtualbox GUI
+      command: pkill VirtualBox
+      become: yes
+      when: virtualbox_instances.rc == 0
+
+    - name: Wait for all instances of the virtualbox GUI to stop
+      wait_for:
+        path: "/proc/{{ item }}/status"
+        state: absent
+        timeout: 15
+      become: yes
+      loop: "{{ virtualbox_instances.stdout_lines }}"
+
+    - name: Stop the virtualbox kernel module service
+      service:
+        name: vboxdrv
+        state: stopped
+      become: yes
+      notify: Start the virtualbox kernel module service
+
+- name: Try to update virtualbox
+  package:
+    name: "{{ virtualbox_package_name }}"
+    state: latest
+    enablerepo: virtualbox
+  become: yes

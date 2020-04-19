@@ -1,0 +1,11 @@
+---
+galaxy_info:
+  author: gliech
+  description: Installs virtualbox on a host. Contains a strategy to put running
+    VMs on hold during an update.
+  min_ansible_version: 2.9
+  platforms:
+    - name: Fedora
+      versions:
+        - 31
+  galaxy_tags: []

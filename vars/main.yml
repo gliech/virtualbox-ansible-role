@@ -1,0 +1,2 @@
+---
+virtualbox_package_name: "VirtualBox-{{ virtualbox_version }}"

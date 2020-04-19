@@ -1,0 +1,12 @@
+---
+- name: Start the virtualbox kernel module service
+  service:
+    name: vboxdrv
+    state: started
+  become: yes
+
+- name: Thaw VMs
+  include_tasks: handlers/thawvms.yml
+  loop: "{{ virtualbox_running_vms.results }}"
+  loop_control:
+    loop_var: virtualbox_user

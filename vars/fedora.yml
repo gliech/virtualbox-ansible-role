@@ -1,0 +1,3 @@
+---
+virtualbox_repo_description: Fedora $releasever - $basearch - VirtualBox
+virtualbox_repo_url: http://download.virtualbox.org/virtualbox/rpm/fedora/$releasever/$basearch
