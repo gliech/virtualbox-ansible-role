@@ -15,17 +15,18 @@
     enabled: no
   become: yes
 
-- name: Install virtualbox dependencies
+- name: Install implicit requirements
   package:
-    name: "{{ item }}"
+    name:
+      - make
+      - perl
+      - kernel-devel
+        # Ensure that the kernel headers of the currently running kernel are
+        # installed. These may differ from the currently installed kernel version.
+      - "kernel-devel-{{ ansible_kernel }}"
+      - dkms
+      - gcc
     state: latest
-  with_items:
-    - kernel-devel
-      # Ensure that the kernel headers of the currently running kernel are
-      # installed. These may differ from the currently installed kernel version.
-    - "kernel-devel-{{ ansible_kernel }}"
-    - dkms
-    - gcc
   become: yes
 
 - name: Create vboxusers group
