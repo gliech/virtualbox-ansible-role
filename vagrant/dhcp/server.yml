@@ -1,0 +1,30 @@
+---
+- hosts: all
+  tasks:
+    - name: Install Dnsmasq
+      package:
+        name: dnsmasq
+        state: present
+      become: yes
+
+    - name: Generate dnsmasq.conf
+      template:
+        src: dnsmasq-conf
+        dest: /etc/dnsmasq.conf
+        validate: 'dnsmasq --test --conf-file=%s'
+      become: yes
+      notify: Restart Dnsmasq
+
+    - name: Enable Dnsmasq
+      service:
+        name: dnsmasq
+        enabled: yes
+        state: started
+      become: yes
+
+  handlers:
+    - name: Restart Dnsmasq
+      service:
+        name: dnsmasq
+        state: restarted
+      become: yes

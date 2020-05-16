@@ -1,0 +1,15 @@
+# Dnsmasq configuration
+# Ansible managed
+
+interface=eth1
+bogus-priv
+
+dhcp-range={{ dhcp_range_start }},{{ dhcp_range_end }},{{ dhcp_lease_time }}
+domain={{ dhcp_domain }}
+dhcp-option=option:router
+dhcp-authoritative
+{% for hostname, ip in dhcp_static_ips.items() %}
+host-record={{ hostname }}.{{ dhcp_domain }},{{ ip }}
+{% endfor %}
+
+conf-dir=/etc/dnsmasq.d
