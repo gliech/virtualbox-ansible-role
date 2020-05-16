@@ -1,9 +1,9 @@
 ---
-- name: Freeze VMs belonging to {{ virtualbox_user.item }}
+- name: Freeze VMs belonging to {{ virtualbox_vm_owner.item }}
   command: "VBoxManage controlvm {{ item | regex_replace('.*{(.*)}', '\\1') }} savestate"
   become: yes
-  become_user: "{{ virtualbox_user.item }}"
+  become_user: "{{ virtualbox_vm_owner.item }}"
   notify: Thaw VMs
-  loop: "{{ virtualbox_user.stdout_lines }}"
+  loop: "{{ virtualbox_vm_owner.stdout_lines }}"
   loop_control:
     label: "{{ item.split()[0] }}"

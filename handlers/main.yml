@@ -9,4 +9,4 @@
   include_tasks: handlers/thawvms.yml
   loop: "{{ virtualbox_running_vms.results }}"
   loop_control:
-    loop_var: virtualbox_user
+    loop_var: virtualbox_vm_owner

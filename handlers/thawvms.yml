@@ -1,8 +1,8 @@
 ---
-- name: "Start VMs belonging to {{ virtualbox_user.item }}"
+- name: "Start VMs belonging to {{ virtualbox_vm_owner.item }}"
   command: "VBoxManage startvm {{ item | regex_replace('.*{(.*)}', '\\1') }} --type headless"
   become: yes
-  become_user: "{{ virtualbox_user.item }}"
-  loop: "{{ virtualbox_user.stdout_lines }}"
+  become_user: "{{ virtualbox_vm_owner.item }}"
+  loop: "{{ virtualbox_vm_owner.stdout_lines }}"
   loop_control:
     label: "{{ item.split()[0] }}"

@@ -22,7 +22,8 @@
       - perl
       - kernel-devel
         # Ensure that the kernel headers of the currently running kernel are
-        # installed. These may differ from the currently installed kernel version.
+        # installed. These may differ from the currently installed kernel
+        # version.
       - "kernel-devel-{{ ansible_kernel }}"
       - dkms
       - gcc
@@ -51,7 +52,7 @@
   block:
     - name: Find users that are running VMs
       command: ps --noheader -o user -C VBoxSVC
-      register: virtualbox_users
+      register: virtualbox_vm_owners
       become: yes
       changed_when: false
       # Wenn ps keinen Prozess findet, hat ps nicht nur eine leere Ausgabe,
@@ -63,8 +64,8 @@
       # der Exit Code 1 ist und gleichzeitig keine Ausgabe auf stderr statt
       # gefunden hat (wenn keine solchen Prozesse gefunden wurden, weil sie
       # nicht existieren, nicht weil ps gescheitert ist).
-      failed_when: not ( virtualbox_users.rc == 0 or ( virtualbox_users.rc == 1
-        and virtualbox_users.stderr == "" ) )
+      failed_when: not ( virtualbox_vm_owners.rc == 0 or
+        ( virtualbox_vm_owners.rc == 1 and virtualbox_vm_owners.stderr == "" ) )
 
     - name: Find all running VMs
       command: VBoxManage list runningvms
@@ -72,14 +73,14 @@
       become: yes
       become_user: "{{ item }}"
       changed_when: false
-      loop: "{{ virtualbox_users.stdout_lines | default([]) | unique }}"
-      when: virtualbox_users.stdout_lines is defined
+      loop: "{{ virtualbox_vm_owners.stdout_lines | default([]) | unique }}"
+      when: virtualbox_vm_owners.stdout_lines is defined
 
     - name: Freeze all running VMs
       include_tasks: freezevms.yml
       loop: "{{ virtualbox_running_vms.results }}"
       loop_control:
-        loop_var: virtualbox_user
+        loop_var: virtualbox_vm_owner
 
     - name: Find all running instances of the virtualbox GUI
       command: pgrep VirtualBox
