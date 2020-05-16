@@ -26,6 +26,8 @@
       - "kernel-devel-{{ ansible_kernel }}"
       - dkms
       - gcc
+      - qt5-qtx11extras
+      - libxkbcommon
     state: latest
   become: yes
 
