@@ -1,5 +1,22 @@
 ---
 - hosts: guests
+  pre_tasks:
+    - name: Install non-standard shell for test_user
+      package:
+        name: zsh
+        state: present
+      become: yes
+    - name: Create test_user
+      user:
+        name: test_user
+        shell: /usr/bin/zsh
+      become: yes
   roles:
     - role: "{{ role_name }}"
+      vars:
+        virtualbox_users:
+          vagrant: {}
+          test_user:
+            machinefolder: /home/test_user/.virtualboxvms
+            loghistorycount: 3
 

@@ -390,7 +390,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
                 end
             end
 
-            # Provisioniere im Hostmode, wenn die letzte Maschine hochgefahren 
+            # Provisioniere im Hostmode, wenn die letzte Maschine hochgefahren
             # wurde, alle Maschinen mit Ansible. Würde dieser Block außerhalb
             # einer einzigen Maschinendefinition stehen, würde Ansible beim
             # Hochfahren jeder Maschine versuchen alle Maschinen zu
