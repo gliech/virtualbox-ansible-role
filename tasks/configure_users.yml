@@ -1,0 +1,31 @@
+---
+- name: Check if user {{ virtualbox_user.key }} exists
+  getent:
+    database: passwd
+    key: "{{ virtualbox_user.key }}"
+  when: virtualbox_fail_if_users_not_in_passwd
+
+- name: Add {{ virtualbox_user.key }} to the vboxusers group
+  user:
+    name: "{{ virtualbox_user.key }}"
+    groups: vboxusers
+    append: yes
+  become: yes
+
+- name: Get current systemproperties for {{ virtualbox_user.key }}
+  command: VBoxManage list systemproperties
+  register: virtualbox_systemproperties
+  become: yes
+  become_user: "{{ virtualbox_user.key }}"
+  changed_when: false
+
+- name: Set systemproperties for {{ virtualbox_user.key }}
+  command: VBoxManage setproperty {{ item.key }} {{ item.value }}
+  become: yes
+  become_user: "{{ virtualbox_user.key }}"
+  when: ( virtualbox_systemproperties.stdout | regex_findall(
+    '^{}:\s*(.*)$'.format(virtualbox_property_map[item.key]), multiline=True)
+    )[0] != ( item.value | string )
+  loop: "{{ virtualbox_user.value | dict2items }}"
+  loop_control:
+    label: "{{ item.key }}"

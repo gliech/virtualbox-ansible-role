@@ -1,2 +1,14 @@
 ---
 virtualbox_package_name: "VirtualBox-{{ virtualbox_version }}"
+virtualbox_property_map:
+  machinefolder: Default machine folder
+  hwvirtexclusive: Exclusive HW virtualization use
+  vrdeauthlibrary: VRDE auth library
+  websrvauthlibrary: Webservice auth. library
+  vrdeextpack: Remote desktop ExtPack
+  autostartdbpath: Autostart database path
+  loghistorycount: Log history count
+  defaultfrontend: Default frontend
+  logginglevel: Logging Level
+  proxymode: Proxy Mode
+  proxyurl: Proxy URL

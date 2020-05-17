@@ -1,3 +1,5 @@
 ---
 virtualbox_version: '6.1'
 virtualbox_force_update: true
+virtualbox_users: {}
+virtualbox_fail_if_users_not_in_passwd: true

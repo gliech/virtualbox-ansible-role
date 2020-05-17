@@ -36,6 +36,7 @@
   group:
     name: vboxusers
     state: present
+    system: yes
   become: yes
 
 - name: Check for virtualbox updates
@@ -114,3 +115,9 @@
     state: latest
     enablerepo: virtualbox
   become: yes
+
+- name: Configure virtualbox users
+  include_tasks: configure_users.yml
+  loop: "{{ virtualbox_users | dict2items }}"
+  loop_control:
+    loop_var: virtualbox_user
