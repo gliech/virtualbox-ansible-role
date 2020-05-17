@@ -77,7 +77,7 @@
       when: virtualbox_vm_owners.stdout_lines is defined
 
     - name: Freeze all running VMs
-      include_tasks: freezevms.yml
+      include_tasks: freeze_vms.yml
       loop: "{{ virtualbox_running_vms.results }}"
       loop_control:
         loop_var: virtualbox_vm_owner

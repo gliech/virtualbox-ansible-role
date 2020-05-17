@@ -6,7 +6,7 @@
   become: yes
 
 - name: Thaw VMs
-  include_tasks: handlers/thawvms.yml
+  include_tasks: handlers/thaw_vms.yml
   loop: "{{ virtualbox_running_vms.results }}"
   loop_control:
     loop_var: virtualbox_vm_owner
